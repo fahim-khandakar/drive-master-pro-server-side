@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -24,6 +24,48 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+
+    const carCollections = client.db("carDB").collection("cars");
+
+    app.post("/brandInfo", async (req, res) => {
+      const newProduct = req.body;
+      console.log(newProduct);
+      const result = await carCollections.insertOne(newProduct);
+      res.send(result);
+    });
+
+    app.get("/brandInfo/:brandName", async (req, res) => {
+      const name = req.params.brandName;
+      const query = { brandName: name };
+      const result = await carCollections.find(query).toArray();
+      res.send(result);
+    });
+    app.get("/carDetails/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await carCollections.findOne(query);
+      res.send(result);
+    });
+
+    app.put("/updateCar/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateCar = req.body;
+      const car = {
+        $set: {
+          photo: updateCar.photo,
+          name: updateCar.name,
+          productType: updateCar.productType,
+          brandName: updateCar.brandName,
+          price: updateCar.price,
+          description: updateCar.description,
+          rating: updateCar.rating,
+        },
+      };
+      const result = await carCollections.updateOne(query, car, options);
+      res.send(result);
+    });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
@@ -31,7 +73,7 @@ async function run() {
     );
   } finally {
     // Ensures that the client will close when you finish/error
-    await client.close();
+    // await client.close();
   }
 }
 run().catch(console.dir);
