@@ -7,7 +7,21 @@ const port = process.env.PORT || 5000;
 
 // middleware
 app.use(express.json());
-app.use(cors());
+const allowedOrigins = ["https://drive-master-pro-f36e6.web.app"];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: "GET, POST, PUT, PATCH, DELETE",
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.p0m1q4c.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -67,7 +81,7 @@ async function run() {
       res.send(result);
     });
 
-    app.put("/updateCar/:id", async (req, res) => {
+    app.patch("/updateCar/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const options = { upsert: true };
