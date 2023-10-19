@@ -26,6 +26,26 @@ async function run() {
     await client.connect();
 
     const carCollections = client.db("carDB").collection("cars");
+    const cartCollections = client.db("carDB").collection("carts");
+
+    app.post("/cartList", async (req, res) => {
+      const newCart = req.body;
+      const result = await cartCollections.insertOne(newCart);
+      res.send(result);
+    });
+    app.get("/cartList", async (req, res) => {
+      const cursor = cartCollections.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    app.delete("/cartList/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = { _id: id };
+      const result = await cartCollections.deleteOne(query);
+      res.send(result);
+    });
 
     app.post("/brandInfo", async (req, res) => {
       const newProduct = req.body;
