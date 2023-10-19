@@ -86,7 +86,7 @@ async function run() {
       const result = await carCollections.updateOne(query, car, options);
       res.send(result);
     });
-    // Send a ping to confirm a successful connection
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
